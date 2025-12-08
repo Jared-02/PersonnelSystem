@@ -1,13 +1,6 @@
 #include <stdio.h>
 #include "common.h"
-
-// 引入功能模块头文件
-#include "file_ops.h"  // 文件读写操作
-#include "add.h"       // 录入
-#include "search.h"    // 查询 & 浏览
-#include "modify.h"    // 修改
-#include "delete.h"    // 删除
-#include "stats.h"     // 统计 & 排序
+#include "emp_manager.h"
 
 void showMenu() {
     printf("\n=============================\n");
