@@ -3,20 +3,29 @@
 
 #include "common.h"
 
+// 基础链表操作
+// 释放链表（二级指针）
+void freeList(Employee **head); 
+
 // 文件操作
-void loadData(Employee employees[], int *count);
-void saveData(Employee employees[], int count);
+// 加载数据（二级指针）
+void loadData(Employee **head); 
+// 保存数据（一级指针）
+void saveData(Employee *head);  
 
 // 核心功能
-void addEmployee(Employee employees[], int *count);
-void printAllEmployees(Employee employees[], int count);
-void modifyEmployee(Employee employees[], int count);
-void deleteEmployee(Employee employees[], int *count);
+// 添加节点（二级指针）
+void addEmployee(Employee **head); 
+// 删除节点
+void deleteEmployee(Employee **head);
 
+// 浏览功能（一级指针）
+void printAllEmployees(Employee *head);
+// 修改功能
+void modifyEmployee(Employee *head);
 // 统计与排序
-void statsMenu(Employee employees[], int count);
-
+void statsMenu(Employee *head);
 // 查询功能
-void searchMenu(Employee employees[], int count);
+void searchMenu(Employee *head);
 
 #endif

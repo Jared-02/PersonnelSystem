@@ -1,162 +1,281 @@
 #include "emp_manager.h"
 
-// --- 内部辅助函数 (不暴露给 main) ---
+// --- 内部辅助函数 ---
+
 void printHeader() {
-    printf("\n%-10s %-10s %-8s %-6s %-15s %-10s\n", "编号", "姓名", "性别", "年龄", "部门", "工资");
+    printf("\n%-10s %-10s %-8s %-6s %-15s %-10s\n", "工号", "姓名", "性别", "年龄", "部门", "工资");
     printf("----------------------------------------------------------------\n");
 }
 
-void printEmployee(Employee e) {
+void printEmployee(Employee *e) {
+    if (e == NULL) return;
     printf("%-10s %-10s %-8s %-6d %-15s %-10.2f\n", 
-           e.id, e.name, e.gender, e.age, e.department, e.salary);
+           e->id, e->name, e->gender, e->age, e->department, e->salary);
 }
 
-// --- 文件操作 ---
-void saveData(Employee employees[], int count) {
-    FILE *fp = fopen(DATA_FILE, "w");
-    if (fp == NULL) {
-        printf("错误：无法打开文件进行写入。\n");
-        return;
-    }
-    for (int i = 0; i < count; i++) {
-        fprintf(fp, "%s %s %s %d %s %.2f\n", 
-                employees[i].id, employees[i].name, employees[i].gender, 
-                employees[i].age, employees[i].department, employees[i].salary);
-    }
-    fclose(fp);
+// 创建新节点
+Employee* createNode() {
+    Employee *newNode = (Employee*)malloc(sizeof(Employee));
+    if (newNode) newNode->next = NULL;
+    return newNode;
 }
 
-void loadData(Employee employees[], int *count) {
+// 查找节点
+Employee* findById(Employee *head, char *id) {
+    Employee *curr = head;
+    while (curr != NULL) {
+        if (strcmp(curr->id, id) == 0) return curr;
+        curr = curr->next;
+    }
+    return NULL;
+}
+
+// 追加节点
+void appendNode(Employee **head, Employee *newNode) {
+    newNode->next = NULL; 
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        Employee *temp = *head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+    }
+}
+
+// --- 外部接口 ---
+
+void freeList(Employee **head) {
+    Employee *curr = *head;
+    while (curr != NULL) {
+        Employee *next = curr->next;
+        free(curr);
+        curr = next;
+    }
+    *head = NULL;
+}
+
+void loadData(Employee **head) {
     FILE *fp = fopen(DATA_FILE, "r");
-    *count = 0;
     if (fp == NULL) return;
 
-    while (fscanf(fp, "%s %s %s %d %s %lf", 
-                  employees[*count].id, employees[*count].name, employees[*count].gender, 
-                  &employees[*count].age, employees[*count].department, 
-                  &employees[*count].salary) != EOF) {
-        (*count)++;
-        if (*count >= MAX_EMP) break;
+    freeList(head); // 先清空
+
+    while (1) {
+        Employee *newNode = createNode();
+        if (fscanf(fp, "%s %s %s %d %s %lf", 
+                   newNode->id, newNode->name, newNode->gender, 
+                   &newNode->age, newNode->department, &newNode->salary) != EOF) {
+            appendNode(head, newNode);
+        } else {
+            free(newNode);
+            break;
+        }
     }
     fclose(fp);
-    printf("[系统提示] 已读取 %d 条记录。\n", *count);
+    printf("[INFO] 数据加载完成。\n");
 }
 
-// --- 录入功能 ---
-void addEmployee(Employee employees[], int *count) {
-    if (*count >= MAX_EMP) {
-        printf("人数已满。\n");
-        return;
+void saveData(Employee *head) {
+    FILE *fp = fopen(DATA_FILE, "w");
+    if (fp == NULL) {
+        printf("无法写入文件。\n"); return;
     }
-    Employee e;
-    printf("请输入编号: "); scanf("%s", e.id);
-    // 简单排重检查
-    for(int i=0; i<*count; i++) {
-        if(strcmp(employees[i].id, e.id) == 0) {
-            printf("编号已存在！\n"); return;
+    Employee *curr = head;
+    while (curr != NULL) {
+        fprintf(fp, "%s %s %s %d %s %.2f\n", 
+                curr->id, curr->name, curr->gender, 
+                curr->age, curr->department, curr->salary);
+        curr = curr->next;
+    }
+    fclose(fp);
+    printf("[系统] 数据已保存。\n");
+}
+
+void addEmployee(Employee **head) {
+    Employee *newNode = createNode();
+    printf("\n--- 录入员工 ---\n");
+    
+    while (1) {
+        printf("输入工号: "); scanf("%s", newNode->id);
+        if (findById(*head, newNode->id)) {
+            printf("工号已存在，请重输。\n");
+        } else {
+            break;
         }
     }
-    printf("请输入姓名: "); scanf("%s", e.name);
-    printf("请输入性别: "); scanf("%s", e.gender);
-    printf("请输入年龄: "); scanf("%d", &e.age);
-    printf("请输入部门: "); scanf("%s", e.department);
-    printf("请输入工资: "); scanf("%lf", &e.salary);
+    printf("输入姓名: "); scanf("%s", newNode->name);
+    printf("输入性别: "); scanf("%s", newNode->gender);
+    printf("输入年龄: "); scanf("%d", &newNode->age);
+    printf("输入部门: "); scanf("%s", newNode->department);
+    printf("输入工资: "); scanf("%lf", &newNode->salary);
 
-    employees[*count] = e;
-    (*count)++;
-    printf("添加成功。\n");
+    appendNode(head, newNode);
+    printf("录入成功。\n");
 }
 
-// --- 浏览功能 ---
-void printAllEmployees(Employee employees[], int count) {
+void printAllEmployees(Employee *head) {
+    if (head == NULL) {
+        printf("暂无数据。\n"); return;
+    }
     printHeader();
-    for(int i=0; i<count; i++) printEmployee(employees[i]);
+    Employee *curr = head;
+    while (curr != NULL) {
+        printEmployee(curr);
+        curr = curr->next;
+    }
 }
 
-// --- 【重点优化】通用查询逻辑 ---
-// searchType: 1=按部门, 2=按工资范围, 3=按编号(用于内部查找)
-void performSearch(Employee employees[], int count, int searchType) {
-    char targetStr[50]; // 用于存储目标字符串（部门或ID）
-    double minS, maxS;  // 用于存储工资范围
-    int found = 0;
-
-    // 1. 根据类型获取用户输入
-    if (searchType == 1) {
-        printf("请输入部门名称: ");
-        scanf("%s", targetStr);
-    } else if (searchType == 2) {
-        printf("请输入工资范围 (最低 最高): ");
-        scanf("%lf %lf", &minS, &maxS);
-    }
-
-    printHeader();
-
-    // 2. 统一遍历，根据类型分支判断
-    for (int i = 0; i < count; i++) {
-        int isMatch = 0;
-        
-        switch (searchType) {
-            case 1: // 按部门 (字符串匹配)
-                if (strcmp(employees[i].department, targetStr) == 0) isMatch = 1;
-                break;
-            case 2: // 按工资 (数值范围)
-                if (employees[i].salary >= minS && employees[i].salary <= maxS) isMatch = 1;
-                break;
-        }
-
-        if (isMatch) {
-            printEmployee(employees[i]);
-            found = 1;
-        }
-    }
-
-    if (!found) printf("未找到匹配的记录。\n");
-}
-
-void searchMenu(Employee employees[], int count) {
-    int choice;
-    printf("\n1. 按部门查询\n2. 按工资范围查询\n请选择: ");
-    scanf("%d", &choice);
-    if (choice == 1 || choice == 2) {
-        performSearch(employees, count, choice);
+void modifyEmployee(Employee *head) {
+    char id[20];
+    printf("输入工号: "); scanf("%s", id);
+    Employee *target = findById(head, id);
+    if (target) {
+        printf("当前工资: %.2f。请输入新工资: ", target->salary);
+        scanf("%lf", &target->salary);
+        printf("修改成功。\n");
     } else {
-        printf("无效选择。\n");
+        printf("未找到。\n");
     }
 }
 
-// --- 修改与删除 (简化示意，逻辑同前) ---
-void modifyEmployee(Employee employees[], int count) {
+void deleteEmployee(Employee **head) {
     char id[20];
-    printf("输入要修改的ID: "); scanf("%s", id);
-    for(int i=0; i<count; i++) {
-        if(strcmp(employees[i].id, id) == 0) {
-            printf("找到员工 %s，请输入新工资: ", employees[i].name);
-            scanf("%lf", &employees[i].salary);
-            printf("修改完成。\n");
-            return;
-        }
-    }
-    printf("未找到该ID。\n");
-}
+    printf("输入要删除的工号: "); scanf("%s", id);
 
-void deleteEmployee(Employee employees[], int *count) {
-    char id[20];
-    printf("输入要删除的ID: "); scanf("%s", id);
-    for(int i=0; i<*count; i++) {
-        if(strcmp(employees[i].id, id) == 0) {
-            employees[i] = employees[(*count)-1]; // 覆盖删除
-            (*count)--;
+    Employee *curr = *head;
+    Employee *prev = NULL;
+
+    while (curr != NULL) {
+        if (strcmp(curr->id, id) == 0) {
+            if (prev == NULL) *head = curr->next;
+            else prev->next = curr->next;
+            free(curr);
             printf("删除成功。\n");
             return;
         }
+        prev = curr;
+        curr = curr->next;
     }
-    printf("未找到该ID。\n");
+    printf("未找到。\n");
 }
 
-// --- 统计 (简化) ---
-void statsMenu(Employee employees[], int count) {
-    if (count == 0) return;
-    double sum = 0;
-    for(int i=0; i<count; i++) sum += employees[i].salary;
-    printf("平均工资: %.2f\n", sum / count);
+void searchMenu(Employee *head) {
+    int choice;
+    printf("\n1.工号查询 2.部门查询 3.工资查询\n选择: ");
+    scanf("%d", &choice);
+    
+    printHeader();
+    int found = 0;
+    Employee *curr = head;
+
+    if (choice == 1) {
+        char id[20];
+        printf("输入工号: ");
+        scanf("%s", id);
+        while(curr) {
+            if (strcmp(curr->id, id) == 0) {
+                printEmployee(curr); found=1;
+            }
+            curr = curr->next;
+        }
+    } else if (choice == 2) {
+        char dept[50];
+        printf("输入部门: ");
+        scanf("%s", dept);
+        while(curr) {
+            if (strcmp(curr->department, dept) == 0) {
+                printEmployee(curr); found=1;
+            }
+            curr = curr->next;
+        }
+    } else if (choice == 3) {
+        double min, max;
+        printf("输入范围 (最小 最大): ");
+        scanf("%lf %lf", &min, &max);
+        while(curr) {
+            if (curr->salary >= min && curr->salary <= max) {
+                printEmployee(curr); found=1;
+            }
+            curr = curr->next;
+        }
+    }
+    if (!found) printf("未找到匹配记录。\n");
+}
+
+// 链表冒泡排序 (只交换数据，不换节点)
+void bubbleSort(Employee *head) {
+    if (head == NULL || head->next == NULL) return;
+    int swapped;
+    Employee *ptr1;
+    Employee *lptr = NULL; // 标记已排序部分的边界
+
+    do {
+        swapped = 0;
+        ptr1 = head;
+
+        while (ptr1->next != lptr) {
+            // 降序排列 (工资高的在前)
+            if (ptr1->salary < ptr1->next->salary) { 
+                // 交换数据
+                // 1. 交换工资 (浮点数)
+                double tempSalary = ptr1->salary;
+                ptr1->salary = ptr1->next->salary;
+                ptr1->next->salary = tempSalary;
+                
+                // 2. 交换年龄 (整数)
+                int tempAge = ptr1->age;
+                ptr1->age = ptr1->next->age;
+                ptr1->next->age = tempAge;
+
+                // 3. 交换工号、姓名、性别、部门 (字符串)
+                char tempStr[50];
+                strcpy(tempStr, ptr1->id);
+                strcpy(ptr1->id, ptr1->next->id);
+                strcpy(ptr1->next->id, tempStr);
+
+                strcpy(tempStr, ptr1->name);
+                strcpy(ptr1->name, ptr1->next->name);
+                strcpy(ptr1->next->name, tempStr);
+
+                strcpy(tempStr, ptr1->gender);
+                strcpy(ptr1->gender, ptr1->next->gender);
+                strcpy(ptr1->next->gender, tempStr);
+
+                strcpy(tempStr, ptr1->department);
+                strcpy(ptr1->department, ptr1->next->department);
+                strcpy(ptr1->next->department, tempStr);
+
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    } while (swapped);
+    
+    printf("排序完成 (按工资降序)\n");
+}
+
+
+void statsMenu(Employee *head) {
+    int c;
+    printf("\n1.按工资降序显示 2.统计平均/最高工资\n选择: ");
+    scanf("%d", &c);
+    if (c == 1) {
+        bubbleSort(head);
+        printAllEmployees(head);
+    } else if (c == 2) {
+        if(!head) return;
+        double sum = 0, max = -1;
+        int n = 0;
+        Employee *p = head;
+        while(p) {
+            sum += p->salary;
+            if(p->salary > max) max = p->salary;
+            n++;
+            p = p->next;
+        }
+        printf("平均: %.2f，最高: %.2f\n", sum/n, max);
+    }
 }

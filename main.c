@@ -18,39 +18,34 @@ void showMenu() {
 }
 
 int main() {
-    Employee employees[MAX_EMP]; // 员工数组
-    int count = 0;               // 当前员工数量
-
-    // 程序启动时从文本文档中读入数据
-    loadData(employees, &count);
+    Employee *head = NULL;
+    loadData(&head); // 传地址
 
     int choice;
     do {
         showMenu();
         scanf("%d", &choice);
-
         switch (choice) {
             case 1:
-                addEmployee(employees, &count);
-                // 每次增删改后更新文件
-                saveData(employees, count);
+                addEmployee(&head);
+                saveData(head);
                 break;
             case 2:
-                printAllEmployees(employees, count);
+                printAllEmployees(head);
                 break;
             case 3:
-                searchMenu(employees, count);
+                searchMenu(head);
                 break;
             case 4:
-                modifyEmployee(employees, count);
-                saveData(employees, count);
+                modifyEmployee(head);
+                saveData(head);
                 break;
             case 5:
-                deleteEmployee(employees, &count);
-                saveData(employees, count);
+                deleteEmployee(&head);
+                saveData(head);
                 break;
             case 6:
-                statsMenu(employees, count);
+                statsMenu(head);
                 break;
             case 0:
                 printf("退出系统，再见！\n");
@@ -60,5 +55,6 @@ int main() {
         }
     } while (choice != 0);
 
+    freeList(&head); // 退出清理
     return 0;
 }
