@@ -129,15 +129,38 @@ void printAllEmployees(Employee *head) {
 
 void modifyEmployee(Employee *head) {
     char id[20];
-    printf("输入工号: "); scanf("%s", id);
+    printf("请输入要修改的员工工号: "); 
+    scanf("%s", id);
+    
     Employee *target = findById(head, id);
-    if (target) {
-        printf("当前工资: %.2f。请输入新工资: ", target->salary);
-        scanf("%lf", &target->salary);
-        printf("修改成功。\n");
-    } else {
-        printf("未找到。\n");
+    
+    if (target == NULL) {
+        printf("未找到工号为 %s 的员工。\n", id);
+        return;
     }
+    // 显示当前信息
+    printf("------------------------------------------------\n");
+    printf("当前信息 > 姓名:%s | 性别:%s | 年龄:%d | 部门:%s | 工资:%.2f\n", 
+           target->name, target->gender, target->age, target->department, target->salary);
+    printf("------------------------------------------------\n");
+    printf("请依次输入新信息 (注意：工号不可修改):\n", target->id);
+
+    printf("请输入新姓名: ");
+    scanf("%s", target->name);
+
+    printf("请输入新性别: ");
+    scanf("%s", target->gender);
+
+    printf("请输入新年龄: ");
+    scanf("%d", &target->age);
+
+    printf("请输入新部门: ");
+    scanf("%s", target->department);
+
+    printf("请输入新工资: ");
+    scanf("%lf", &target->salary);
+
+    printf(">>> 修改成功！\n");
 }
 
 void deleteEmployee(Employee **head) {
@@ -209,7 +232,7 @@ void bubbleSort(Employee *head) {
     if (head == NULL || head->next == NULL) return;
     int swapped;
     Employee *ptr1;
-    Employee *lptr = NULL; // 标记已排序部分的边界
+    Employee *lptr = NULL; // 标记已排序的部分，每轮必有沉底
 
     do {
         swapped = 0;
