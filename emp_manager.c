@@ -21,7 +21,7 @@ Employee* createNode() {
 }
 
 // 查找节点
-Employee* findById(Employee *head, char *id) {
+Employee* findById(Employee *head, const char *id) {
     Employee *curr = head;
     while (curr != NULL) {
         if (strcmp(curr->id, id) == 0) return curr;
