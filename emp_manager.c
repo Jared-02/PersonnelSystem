@@ -13,6 +13,43 @@ void printEmployee(Employee *e) {
            e->id, e->name, e->gender, e->age, e->department, e->salary);
 }
 
+void clearInputBuffer(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+}
+
+void inputString(const char *prompt, char *dest, size_t size) {
+    printf("%s", prompt);
+    fgets(dest, size, stdin);
+
+    if (dest[0] == '\n') return;
+
+    dest[strcspn(dest, "\n")] = '\0';
+}
+
+void inputInt(const char *prompt, int *value) {
+    char buf[32];
+
+    printf("%s", prompt);
+    fgets(buf, sizeof(buf), stdin);
+
+    if (buf[0] == '\n') return;
+
+    *value = atoi(buf); // str to int
+}
+
+void inputDouble(const char *prompt, double *value) {
+    char buf[32];
+
+    printf("%s", prompt);
+    fgets(buf, sizeof(buf), stdin);
+
+    if (buf[0] == '\n') return;
+
+    *value = atof(buf); // str to float
+}
+
 // 创建新节点
 Employee* createNode() {
     Employee *newNode = (Employee*)malloc(sizeof(Employee));
@@ -143,22 +180,14 @@ void modifyEmployee(Employee *head) {
     printf("当前信息 > 姓名:%s | 性别:%s | 年龄:%d | 部门:%s | 工资:%.2f\n", 
            target->name, target->gender, target->age, target->department, target->salary);
     printf("------------------------------------------------\n");
-    printf("请依次输入新信息 (注意：工号不可修改):\n", target->id);
+    printf("请依次输入新信息 (注意：工号不可修改，回车跳过该项):\n", target->id);
 
-    printf("请输入新姓名: ");
-    scanf("%s", target->name);
-
-    printf("请输入新性别: ");
-    scanf("%s", target->gender);
-
-    printf("请输入新年龄: ");
-    scanf("%d", &target->age);
-
-    printf("请输入新部门: ");
-    scanf("%s", target->department);
-
-    printf("请输入新工资: ");
-    scanf("%lf", &target->salary);
+    clearInputBuffer();
+    inputString("请输入新姓名: ", target->name, sizeof(target->name));
+    inputString("请输入新性别: ", target->gender, sizeof(target->gender));
+    inputInt("请输入新年龄: ", &target->age);
+    inputString("请输入新部门: ", target->department, sizeof(target->department));
+    inputDouble("请输入新工资: ", &target->salary);
 
     printf("[INFO] 修改成功！\n");
 }
