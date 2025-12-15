@@ -80,7 +80,7 @@ void loadData(Employee **head) {
 void saveData(Employee *head) {
     FILE *fp = fopen(DATA_FILE, "w");
     if (fp == NULL) {
-        printf("无法写入文件。\n"); return;
+        printf("[ERROR] 无法写入文件。\n"); return;
     }
     Employee *curr = head;
     while (curr != NULL) {
@@ -90,7 +90,7 @@ void saveData(Employee *head) {
         curr = curr->next;
     }
     fclose(fp);
-    printf("[系统] 数据已保存。\n");
+    printf("[INFO] 数据已保存。\n");
 }
 
 void addEmployee(Employee **head) {
@@ -100,7 +100,7 @@ void addEmployee(Employee **head) {
     while (1) {
         printf("输入工号: "); scanf("%s", newNode->id);
         if (findById(*head, newNode->id)) {
-            printf("工号已存在，请重输。\n");
+            printf("[WARN] 工号已存在，请重输。\n");
         } else {
             break;
         }
@@ -112,12 +112,12 @@ void addEmployee(Employee **head) {
     printf("输入工资: "); scanf("%lf", &newNode->salary);
 
     appendNode(head, newNode);
-    printf("录入成功。\n");
+    printf("[INFO] 录入成功。\n");
 }
 
 void printAllEmployees(Employee *head) {
     if (head == NULL) {
-        printf("暂无数据。\n"); return;
+        printf("[INFO] 暂无数据。\n"); return;
     }
     printHeader();
     Employee *curr = head;
@@ -135,7 +135,7 @@ void modifyEmployee(Employee *head) {
     Employee *target = findById(head, id);
     
     if (target == NULL) {
-        printf("未找到工号为 %s 的员工。\n", id);
+        printf("[INFO] 未找到工号为 %s 的员工。\n", id);
         return;
     }
     // 显示当前信息
@@ -160,7 +160,7 @@ void modifyEmployee(Employee *head) {
     printf("请输入新工资: ");
     scanf("%lf", &target->salary);
 
-    printf(">>> 修改成功！\n");
+    printf("[INFO] 修改成功！\n");
 }
 
 void deleteEmployee(Employee **head) {
@@ -175,13 +175,13 @@ void deleteEmployee(Employee **head) {
             if (prev == NULL) *head = curr->next;
             else prev->next = curr->next;
             free(curr);
-            printf("删除成功。\n");
+            printf("[INFO] 删除成功。\n");
             return;
         }
         prev = curr;
         curr = curr->next;
     }
-    printf("未找到。\n");
+    printf("[WARN] 未找到。\n");
 }
 
 void searchMenu(Employee *head) {
@@ -224,7 +224,7 @@ void searchMenu(Employee *head) {
             curr = curr->next;
         }
     }
-    if (!found) printf("未找到匹配记录。\n");
+    if (!found) printf("[WARN] 未找到匹配记录。\n");
 }
 
 // 链表冒泡排序 (只交换数据，不换节点)
@@ -277,7 +277,7 @@ void bubbleSort(Employee *head) {
         lptr = ptr1;
     } while (swapped);
     
-    printf("排序完成 (按工资降序)\n");
+    printf("[INFO] 排序完成 (按工资降序)\n");
 }
 
 

@@ -48,10 +48,10 @@ int main() {
                 statsMenu(head);
                 break;
             case 0:
-                printf("退出系统，再见！\n");
+                printf("[INFO] 退出系统，再见！\n");
                 break;
             default:
-                printf("无效输入，请重新选择。\n");
+                printf("[WARN] 无效输入，请重新选择。\n");
         }
     } while (choice != 0);
 
