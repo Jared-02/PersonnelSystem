@@ -2,17 +2,6 @@
 
 // --- 内部辅助函数 ---
 
-void printHeader() {
-    printf("\n%-10s %-10s %-8s %-6s %-15s %-10s\n", "工号", "姓名", "性别", "年龄", "部门", "工资");
-    printf("----------------------------------------------------------------\n");
-}
-
-void printEmployee(Employee *e) {
-    if (e == NULL) return;
-    printf("%-10s %-10s %-8s %-6d %-15s %-10.2f\n", 
-           e->id, e->name, e->gender, e->age, e->department, e->salary);
-}
-
 // 清空缓冲区残留字符
 void clearInputBuffer(void) {
     int c;
@@ -52,6 +41,55 @@ void inputDouble(const char *prompt, double *value) {
     if (buf[0] == '\n') return;
 
     *value = atof(buf); // str to float
+}
+
+// 过滤器：ID
+int checkID(const Employee *e, void *idStr) {
+    return strcmp(e->id, (char*)idStr) == 0;
+}
+// 过滤器：姓名
+int checkName(const Employee *e, void *nameStr) {
+    return strcmp(e->name, (char*)nameStr) == 0;
+}
+// 过滤器：性别
+int checkGender(const Employee *e, void *genderStr) {
+    return strcmp(e->gender, (char*)genderStr) == 0;
+}
+// 过滤器：部门
+int checkDepartment(const Employee *e, void *deptStr) {
+    return strcmp(e->department, (char*)deptStr) == 0;
+}
+// 过滤器：年龄范围
+int checkAgeRange(const Employee *e, void *args) {
+    NumberRange *range = (NumberRange*)args;
+    return (e->age >= range->min && e->age <= range->max);
+}
+// 过滤器：工资范围
+int checkSalaryRange(const Employee *e, void *args) {
+    NumberRange *range = (NumberRange*)args;
+    return (e->salary >= range->min && e->salary <= range->max);
+}
+// 过滤器：空
+int checkNone(const Employee *e, void *args) {
+    return 1;
+}
+// 员工过滤函数
+void filterEmployees(Employee *head, Predicate predicate, void *args) {
+    Employee *curr = head;
+    int count = 0;
+
+    printf("\n%-10s %-10s %-8s %-6s %-15s %-10s\n", "工号", "姓名", "性别", "年龄", "部门", "工资");
+    printf("----------------------------------------------------------------\n");
+    while (curr != NULL) {
+        // 回调函数判断
+        if (predicate(curr, args)) {
+            printf("%-10s %-10s %-8s %-6d %-15s %-10.2f\n", 
+                    curr->id, curr->name, curr->gender, curr->age, curr->department, curr->salary);
+            count++;
+        }
+        curr = curr->next;
+    }
+    if (count == 0) printf("[WARN] 未找到匹配记录。\n");
 }
 
 // 创建新节点
@@ -161,12 +199,7 @@ void printAllEmployees(Employee *head) {
     if (head == NULL) {
         printf("[INFO] 暂无数据。\n"); return;
     }
-    printHeader();
-    Employee *curr = head;
-    while (curr != NULL) {
-        printEmployee(curr);
-        curr = curr->next;
-    }
+    filterEmployees(head, checkNone, "");
 }
 
 void modifyEmployee(Employee *head) {
@@ -220,44 +253,34 @@ void deleteEmployee(Employee **head) {
 
 void searchMenu(Employee *head) {
     int choice;
-    printf("\n1.工号查询 2.部门查询 3.工资查询\n选择: ");
+    printf("\n1.工号查询\n2.姓名查询\n3.性别查询\n4.年龄查询\n5.部门查询\n6.工资查询\n选择: ");
     scanf("%d", &choice);
     
-    printHeader();
-    int found = 0;
-    Employee *curr = head;
+    char temp[50];
+    double min, max;
     clearInputBuffer();
 
     if (choice == 1) {
-        char id[20];
-        inputString("输入工号: ", id, sizeof(id));
-        while(curr) {
-            if (strcmp(curr->id, id) == 0) {
-                printEmployee(curr); found=1;
-            }
-            curr = curr->next;
-        }
+        inputString("输入工号: ", temp, sizeof(temp));
+        filterEmployees(head, checkID, temp);
     } else if (choice == 2) {
-        char dept[50];
-        inputString("输入部门: ", dept, sizeof(dept));
-        while(curr) {
-            if (strcmp(curr->department, dept) == 0) {
-                printEmployee(curr); found=1;
-            }
-            curr = curr->next;
-        }
+        inputString("输入姓名: ", temp, sizeof(temp));
+        filterEmployees(head, checkName, temp);
     } else if (choice == 3) {
-        double min, max;
-        printf("输入范围 (最小 最大): ");
-        scanf("%lf %lf", &min, &max);
-        while(curr) {
-            if (curr->salary >= min && curr->salary <= max) {
-                printEmployee(curr); found=1;
-            }
-            curr = curr->next;
-        }
+        inputString("输入性别: ", temp, sizeof(temp));
+        filterEmployees(head, checkGender, temp);
+    } else if (choice == 4) {
+        printf("输入年龄范围 (最小 最大): "); scanf("%lf %lf", &min, &max);
+        NumberRange ageQuery = {min, max};
+        filterEmployees(head, checkAgeRange, &ageQuery);
+    } else if (choice == 5) {
+        inputString("输入部门: ", temp, sizeof(temp));
+        filterEmployees(head, checkDepartment, temp);
+    } else if (choice == 6) {
+        printf("输入工资范围 (最小 最大): "); scanf("%lf %lf", &min, &max);
+        NumberRange salaryQuery = {min, max};
+        filterEmployees(head, checkSalaryRange, &salaryQuery);
     }
-    if (!found) printf("[WARN] 未找到匹配记录。\n");
 }
 
 // 链表冒泡排序 (只交换数据，不换节点)

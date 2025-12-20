@@ -2,6 +2,13 @@
 #define EMP_MANAGER_H
 
 #include "common.h"
+// 条件函数指针
+typedef int (*Predicate)(const Employee *e, void *args);
+// 范围结构体
+typedef struct {
+    double min;
+    double max;
+} NumberRange;
 
 // 基础链表操作
 // 释放链表（二级指针）
