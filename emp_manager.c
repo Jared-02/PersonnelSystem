@@ -13,6 +13,7 @@ void printEmployee(Employee *e) {
            e->id, e->name, e->gender, e->age, e->department, e->salary);
 }
 
+// 清空缓冲区残留字符
 void clearInputBuffer(void) {
     int c;
     while ((c = getchar()) != '\n' && c != EOF)
@@ -20,12 +21,15 @@ void clearInputBuffer(void) {
 }
 
 void inputString(const char *prompt, char *dest, size_t size) {
+    char buf[100];
     printf("%s", prompt);
-    fgets(dest, size, stdin);
+    fgets(buf, sizeof(buf), stdin);
 
-    if (dest[0] == '\n') return;
+    if (buf[0] == '\n') return;
 
-    dest[strcspn(dest, "\n")] = '\0';
+    buf[strcspn(buf, "\n")] = '\0';
+    strncpy(dest, buf, size - 1);
+    dest[size - 1] = '\0';
 }
 
 void inputInt(const char *prompt, int *value) {
@@ -134,19 +138,20 @@ void addEmployee(Employee **head) {
     Employee *newNode = createNode();
     printf("\n--- 录入员工 ---\n");
     
+    clearInputBuffer();
     while (1) {
-        printf("输入工号: "); scanf("%s", newNode->id);
+        inputString("输入工号: ", newNode->id, sizeof(newNode->id));
         if (findById(*head, newNode->id)) {
             printf("[WARN] 工号已存在，请重输。\n");
         } else {
             break;
         }
     }
-    printf("输入姓名: "); scanf("%s", newNode->name);
-    printf("输入性别: "); scanf("%s", newNode->gender);
-    printf("输入年龄: "); scanf("%d", &newNode->age);
-    printf("输入部门: "); scanf("%s", newNode->department);
-    printf("输入工资: "); scanf("%lf", &newNode->salary);
+    inputString("输入姓名: ", newNode->name, sizeof(newNode->name));
+    inputString("输入性别: ", newNode->gender, sizeof(newNode->gender));
+    inputInt("输入年龄: ", &newNode->age);
+    inputString("输入部门: ", newNode->department, sizeof(newNode->department));
+    inputDouble("输入工资: ", &newNode->salary);
 
     appendNode(head, newNode);
     printf("[INFO] 录入成功。\n");
@@ -166,8 +171,8 @@ void printAllEmployees(Employee *head) {
 
 void modifyEmployee(Employee *head) {
     char id[20];
-    printf("请输入要修改的员工工号: "); 
-    scanf("%s", id);
+    clearInputBuffer();
+    inputString("请输入要修改的员工工号: ", id, sizeof(id));
     
     Employee *target = findById(head, id);
     
@@ -182,7 +187,6 @@ void modifyEmployee(Employee *head) {
     printf("------------------------------------------------\n");
     printf("请依次输入新信息 (注意：工号不可修改，回车跳过该项):\n", target->id);
 
-    clearInputBuffer();
     inputString("请输入新姓名: ", target->name, sizeof(target->name));
     inputString("请输入新性别: ", target->gender, sizeof(target->gender));
     inputInt("请输入新年龄: ", &target->age);
@@ -194,7 +198,8 @@ void modifyEmployee(Employee *head) {
 
 void deleteEmployee(Employee **head) {
     char id[20];
-    printf("输入要删除的工号: "); scanf("%s", id);
+    clearInputBuffer();
+    inputString("输入要删除的工号: ", id, sizeof(id));
 
     Employee *curr = *head;
     Employee *prev = NULL;
@@ -221,11 +226,11 @@ void searchMenu(Employee *head) {
     printHeader();
     int found = 0;
     Employee *curr = head;
+    clearInputBuffer();
 
     if (choice == 1) {
         char id[20];
-        printf("输入工号: ");
-        scanf("%s", id);
+        inputString("输入工号: ", id, sizeof(id));
         while(curr) {
             if (strcmp(curr->id, id) == 0) {
                 printEmployee(curr); found=1;
@@ -234,8 +239,7 @@ void searchMenu(Employee *head) {
         }
     } else if (choice == 2) {
         char dept[50];
-        printf("输入部门: ");
-        scanf("%s", dept);
+        inputString("输入部门: ", dept, sizeof(dept));
         while(curr) {
             if (strcmp(curr->department, dept) == 0) {
                 printEmployee(curr); found=1;
