@@ -92,6 +92,36 @@ void filterEmployees(Employee *head, Predicate predicate, void *args) {
     if (count == 0) printf("[WARN] 未找到匹配记录。\n");
 }
 
+// 统计年龄分布（基于桶）
+void ageDistribution(Employee *head, Predicate predicate, void *args) {
+    int groups[5] = {0}; // 0:20-29, 1:30-39, 2:40-49, 3:50-59, 4:60+
+    int count = 0;
+    Employee *curr = head;
+
+    while (curr != NULL) {
+        // 子类统计判断
+        if (predicate(curr, args)) {
+            count++;
+            if (curr->age >= 20 && curr->age < 30) groups[0]++;
+            else if (curr->age >= 30 && curr->age < 40) groups[1]++;
+            else if (curr->age >= 40 && curr->age < 50) groups[2]++;
+            else if (curr->age >= 50 && curr->age < 60) groups[3]++;
+            else if (curr->age >= 60) groups[4]++;
+        }
+        curr = curr->next;
+    }
+
+    if (count == 0) {
+        printf("[WARN] 未找到匹配记录。\n"); return;
+    }
+    printf("年龄分布统计:\n");
+    printf("  20-29岁: %d人\n", groups[0]);
+    printf("  30-39岁: %d人\n", groups[1]);
+    printf("  40-49岁: %d人\n", groups[2]);
+    printf("  50-59岁: %d人\n", groups[3]);
+    printf("  60岁以上: %d人\n", groups[4]);
+}
+
 // 创建新节点
 Employee* createNode() {
     Employee *newNode = (Employee*)malloc(sizeof(Employee));
@@ -338,13 +368,13 @@ void bubbleSort(Employee *head) {
 
 
 void statsMenu(Employee *head) {
-    int c;
-    printf("\n1.按工资降序显示 2.统计平均/最高工资\n选择: ");
-    scanf("%d", &c);
-    if (c == 1) {
+    int parentChoice, childChoice;
+    printf("\n1.按工资降序显示\n2.统计平均/最高工资\n3.统计年龄分布\n选择: ");
+    scanf("%d", &parentChoice);
+    if (parentChoice == 1) {
         bubbleSort(head);
         printAllEmployees(head);
-    } else if (c == 2) {
+    } else if (parentChoice == 2) {
         if(!head) return;
         double sum = 0, max = -1;
         int n = 0;
@@ -356,5 +386,21 @@ void statsMenu(Employee *head) {
             p = p->next;
         }
         printf("平均: %.2f，最高: %.2f\n", sum/n, max);
-    }
+    } else if (parentChoice == 3) {
+        printf("\n1.按性别统计\n2.按部门统计\n3.全统计\n选择: ");
+        scanf("%d", &childChoice);
+
+        char temp[50];
+        clearInputBuffer();
+
+        if (childChoice == 1) {
+            inputString("输入性别: ", temp, sizeof(temp));
+            ageDistribution(head, checkGender, temp);
+        } else if (childChoice == 2) {
+            inputString("输入部门: ", temp, sizeof(temp));
+            ageDistribution(head, checkDepartment, temp);
+        } else if (childChoice == 3) {
+            ageDistribution(head, checkNone, "");
+        }
+        }
 }
