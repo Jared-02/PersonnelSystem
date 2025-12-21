@@ -122,6 +122,35 @@ void ageDistribution(Employee *head, Predicate predicate, void *args) {
     printf("  60岁以上: %d人\n", groups[4]);
 }
 
+// 工资统计函数
+void calculateSalary(Employee *head, Predicate predicate, void *args) {
+    SalaryStats stats = {0.0, 0, 0.0, 0.0}; // init
+    Employee *curr = head;
+    int first = 1;
+
+    while (curr != NULL) {
+        if (predicate(curr, args)) {
+            stats.totalSalary += curr->salary;
+            stats.count++;
+            
+            if (first) {
+                stats.maxSalary = curr->salary;
+                stats.minSalary = curr->salary;
+                first = 0;
+            } else {
+                if (curr->salary > stats.maxSalary) stats.maxSalary = curr->salary;
+                if (curr->salary < stats.minSalary) stats.minSalary = curr->salary;
+            }
+        }
+        curr = curr->next;
+    }
+    if (stats.count == 0) {
+        printf("[WARN] 未找到匹配记录。\n"); return;
+    }
+    printf("%s工资平均: %.2f 最高: %.2f 最低: %.2f\n", args,
+        stats.totalSalary / stats.count, stats.maxSalary, stats.minSalary);
+}
+
 // 创建新节点
 Employee* createNode() {
     Employee *newNode = (Employee*)malloc(sizeof(Employee));
@@ -283,7 +312,7 @@ void deleteEmployee(Employee **head) {
 
 void searchMenu(Employee *head) {
     int choice;
-    printf("\n1.工号查询\n2.姓名查询\n3.性别查询\n4.年龄查询\n5.部门查询\n6.工资查询\n选择: ");
+    printf("\n1. 工号查询\n2. 姓名查询\n3. 性别查询\n4. 年龄查询\n5. 部门查询\n6. 工资查询\n选择: ");
     scanf("%d", &choice);
     
     char temp[50];
@@ -369,25 +398,29 @@ void bubbleSort(Employee *head) {
 
 void statsMenu(Employee *head) {
     int parentChoice, childChoice;
-    printf("\n1.按工资降序显示\n2.统计平均/最高工资\n3.统计年龄分布\n选择: ");
+    printf("\n1. 工资降序显示\n2. 统计工资详情\n3. 统计年龄分布\n选择: ");
     scanf("%d", &parentChoice);
     if (parentChoice == 1) {
         bubbleSort(head);
         printAllEmployees(head);
     } else if (parentChoice == 2) {
-        if(!head) return;
-        double sum = 0, max = -1;
-        int n = 0;
-        Employee *p = head;
-        while(p) {
-            sum += p->salary;
-            if(p->salary > max) max = p->salary;
-            n++;
-            p = p->next;
+        printf("\n1. 按性别统计\n2. 按部门统计\n3. 全统计\n选择: ");
+        scanf("%d", &childChoice);
+
+        char temp[50];
+        clearInputBuffer();
+
+        if (childChoice == 1) {
+            inputString("输入性别: ", temp, sizeof(temp));
+            calculateSalary(head, checkGender, temp);
+        } else if (childChoice == 2) {
+            inputString("输入部门: ", temp, sizeof(temp));
+            calculateSalary(head, checkDepartment, temp);
+        } else if (childChoice == 3) {
+            calculateSalary(head, checkNone, "");
         }
-        printf("平均: %.2f，最高: %.2f\n", sum/n, max);
     } else if (parentChoice == 3) {
-        printf("\n1.按性别统计\n2.按部门统计\n3.全统计\n选择: ");
+        printf("\n1. 按性别统计\n2. 按部门统计\n3. 全统计\n选择: ");
         scanf("%d", &childChoice);
 
         char temp[50];
@@ -402,5 +435,5 @@ void statsMenu(Employee *head) {
         } else if (childChoice == 3) {
             ageDistribution(head, checkNone, "");
         }
-        }
+    }
 }

@@ -9,6 +9,12 @@ typedef struct {
     double min;
     double max;
 } NumberRange;
+typedef struct {
+    double totalSalary;
+    int count;
+    double maxSalary;
+    double minSalary;
+} SalaryStats;
 
 // 基础链表操作
 // 释放链表（二级指针）
