@@ -312,12 +312,11 @@ void deleteEmployee(Employee **head) {
 
 void searchMenu(Employee *head) {
     int choice;
-    printf("\n1. 工号查询\n2. 姓名查询\n3. 性别查询\n4. 年龄查询\n5. 部门查询\n6. 工资查询\n选择: ");
-    scanf("%d", &choice);
+    clearInputBuffer();
+    inputInt("\n1. 工号查询\n2. 姓名查询\n3. 性别查询\n4. 年龄查询\n5. 部门查询\n6. 工资查询\n选择: ", &choice);
     
     char temp[50];
     double min, max;
-    clearInputBuffer();
 
     if (choice == 1) {
         inputString("输入工号: ", temp, sizeof(temp));
@@ -395,20 +394,20 @@ void bubbleSort(Employee *head) {
     printf("[INFO] 排序完成 (按工资降序)\n");
 }
 
-
 void statsMenu(Employee *head) {
     int parentChoice, childChoice;
-    printf("\n1. 工资降序显示\n2. 统计工资详情\n3. 统计年龄分布\n选择: ");
-    scanf("%d", &parentChoice);
+    
+    char temp[50];
+    double min, max;
+
+    clearInputBuffer();
+    inputInt("\n1. 工资降序显示\n2. 统计工资详情\n3. 统计年龄分布\n选择: ",
+            &parentChoice);
     if (parentChoice == 1) {
         bubbleSort(head);
         printAllEmployees(head);
     } else if (parentChoice == 2) {
-        printf("\n1. 按性别统计\n2. 按部门统计\n3. 全统计\n选择: ");
-        scanf("%d", &childChoice);
-
-        char temp[50];
-        clearInputBuffer();
+        inputInt("\n1. 按性别统计\n2. 按部门统计\n3. 按年龄范围统计\n4. 全统计\n选择: ", &childChoice);
 
         if (childChoice == 1) {
             inputString("输入性别: ", temp, sizeof(temp));
@@ -417,14 +416,14 @@ void statsMenu(Employee *head) {
             inputString("输入部门: ", temp, sizeof(temp));
             calculateSalary(head, checkDepartment, temp);
         } else if (childChoice == 3) {
+            printf("输入年龄范围 (最小 最大): "); scanf("%lf %lf", &min, &max);
+            NumberRange ageQuery = {min, max};
+            calculateSalary(head, checkAgeRange, &ageQuery);
+        } else if (childChoice == 4) {
             calculateSalary(head, checkNone, "");
         }
     } else if (parentChoice == 3) {
-        printf("\n1. 按性别统计\n2. 按部门统计\n3. 全统计\n选择: ");
-        scanf("%d", &childChoice);
-
-        char temp[50];
-        clearInputBuffer();
+        inputInt("\n1. 按性别统计\n2. 按部门统计\n3. 按工资范围统计\n4. 全统计\n选择: ", &childChoice);
 
         if (childChoice == 1) {
             inputString("输入性别: ", temp, sizeof(temp));
@@ -433,6 +432,10 @@ void statsMenu(Employee *head) {
             inputString("输入部门: ", temp, sizeof(temp));
             ageDistribution(head, checkDepartment, temp);
         } else if (childChoice == 3) {
+            printf("输入工资范围 (最小 最大): "); scanf("%lf %lf", &min, &max);
+            NumberRange salaryQuery = {min, max};
+            ageDistribution(head, checkSalaryRange, &salaryQuery);
+        } else if (childChoice == 4) {
             ageDistribution(head, checkNone, "");
         }
     }
